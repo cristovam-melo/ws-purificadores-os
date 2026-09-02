@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "WS Purificadores OS",
+  "version": "1.0.0",
+  "identifier": "com.wspurificadores.osws",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:3000",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "WS Purificadores - Gestão de OS & Alertas",
+        "width": 1280,
+        "height": 820,
+        "minWidth": 1000,
+        "minHeight": 650,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "createUpdaterArtifacts": true,
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "android": {
+      "debugApplicationIdSuffix": ".debug"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEY2QzA0Q0MwRTM4RkNDRjIKUldUeXpJL2p3RXpBOXVpS2dtTC8zRUZqWUcxdkRzckoxbXBtYi9pYnpZQ3JtNDVOZlRHaGE2Qk8K",
+      "endpoints": [
+        "https://github.com/cristovam-melo/ws-purificadores-os/releases/latest/download/latest.json"
+      ]
+    }
+  }
+}

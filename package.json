@@ -1,0 +1,67 @@
+{
+  "name": "os-ws",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Sistema de Gestão de Ordens de Serviço e Alertas - WS Purificadores",
+  "main": "electron/main.cjs",
+  "author": "WS Purificadores",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "electron:dev": "electron .",
+    "dist:win": "vite build && electron-builder --win"
+  },
+  "build": {
+    "appId": "com.wspurificadores.osws",
+    "productName": "WS Purificadores OS",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "WS Purificadores OS"
+    }
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@tauri-apps/plugin-updater": "^2.11.0",
+    "autoprefixer": "^10.5.4",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.4.0",
+    "dexie": "^4.4.5",
+    "dexie-react-hooks": "^4.4.0",
+    "html-to-image": "^1.11.13",
+    "jspdf": "^4.2.1",
+    "lucide-react": "^1.35.0",
+    "postcss": "^8.5.26",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.1.0",
+    "oxlint": "^1.79.0",
+    "vite": "^8.2.2"
+  }
+}
