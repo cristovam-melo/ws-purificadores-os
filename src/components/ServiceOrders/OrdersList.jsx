@@ -6,14 +6,19 @@ import {
   Eye, 
   Edit2, 
   Trash2, 
-  MessageCircle 
+  MessageCircle,
+  UploadCloud,
+  CheckCircle2
 } from 'lucide-react';
 import { formatCurrency, formatSimpleDate } from '../../utils/formatters';
 import { sendWhatsAppMessage, generateOSWhatsAppText } from '../../services/messaging';
+import { PDFImportModal } from './PDFImportModal';
 
-export function OrdersList({ orders = [], settings, onNewOS, onEditOS, onViewOS, onDeleteOS }) {
+export function OrdersList({ orders = [], clients = [], settings, onNewOS, onEditOS, onViewOS, onDeleteOS }) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importFeedback, setImportFeedback] = useState('');
 
   const filteredOrders = orders.filter(os => {
     const matchesSearch = 
@@ -71,14 +76,43 @@ export function OrdersList({ orders = [], settings, onNewOS, onEditOS, onViewOS,
           </select>
         </div>
 
-        <button
-          onClick={onNewOS}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-xs transition-colors cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Criar Nova OS</span>
-        </button>
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <button
+            type="button"
+            onClick={() => setIsImportModalOpen(true)}
+            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold px-4 py-2.5 rounded-xl border border-slate-300 transition-colors cursor-pointer"
+          >
+            <UploadCloud className="w-4 h-4 text-blue-600" />
+            <span>Importar de PDFs</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onNewOS}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-xs transition-colors cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Criar Nova OS</span>
+          </button>
+        </div>
       </div>
+
+      {/* Banner de Feedback de Importação */}
+      {importFeedback && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-semibold flex items-center justify-between animate-fadeIn">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{importFeedback}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setImportFeedback('')}
+            className="text-emerald-700 hover:text-emerald-900 text-xs font-bold"
+          >
+            Dispensar
+          </button>
+        </div>
+      )}
 
       {/* Tabela de Ordens de Serviço */}
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
@@ -185,6 +219,16 @@ export function OrdersList({ orders = [], settings, onNewOS, onEditOS, onViewOS,
           </div>
         )}
       </div>
+
+      <PDFImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        clients={clients}
+        onImportSuccess={({ importedCount, newClientsCount }) => {
+          setImportFeedback(`Sucesso! ${importedCount} Ordens de Serviço importadas e ${newClientsCount} novos clientes cadastrados.`);
+          setTimeout(() => setImportFeedback(''), 8000);
+        }}
+      />
     </div>
   );
 }

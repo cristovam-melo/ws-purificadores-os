@@ -12,6 +12,7 @@ dist
 dist-ssr
 release
 *.local
+*.pdf
 
 # Tauri build and secrets
 /src-tauri/target/

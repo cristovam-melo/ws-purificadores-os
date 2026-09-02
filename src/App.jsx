@@ -260,6 +260,7 @@ export function App() {
           {activeTab === 'orders' && (
             <OrdersList
               orders={orders}
+              clients={clients}
               settings={settings}
               onNewOS={() => {
                 setEditingOS(null);
