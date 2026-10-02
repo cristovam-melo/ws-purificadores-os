@@ -38,7 +38,8 @@ export function SettingsView({ settings, onSaveSettings, onCheckUpdates }) {
     standardWarranty: settings?.standardWarranty || '12 meses',
     returnMonths: settings?.returnMonths || 12,
     whatsappTemplateAlert: settings?.whatsappTemplateAlert || 'Olá {cliente}! Tudo bem? Verificamos aqui que faz {meses} meses desde a manutenção/troca de refil do seu purificador ({equipamento}). Para manter a água sempre pura e seu aparelho protegido, gostaria de agendar a troca do elemento filtrante?',
-    whatsappTemplateOS: settings?.whatsappTemplateOS || 'Olá {cliente}, sua Ordem de Serviço #{osNumber} da WS Purificadores está pronta! Status: {status}. Total: R$ {total}. Qualquer dúvida estamos à disposição!'
+    whatsappTemplateOS: settings?.whatsappTemplateOS || 'Olá {cliente}, sua Ordem de Serviço #{osNumber} da WS Purificadores está pronta! Status: {status}. Total: R$ {total}. Qualquer dúvida estamos à disposição!',
+    whatsappAppMode: settings?.whatsappAppMode || 'desktop'
   });
 
   const [isSaved, setIsSaved] = useState(false);
@@ -84,6 +85,16 @@ export function SettingsView({ settings, onSaveSettings, onCheckUpdates }) {
   useEffect(() => {
     loadSyncStatus();
   }, []);
+
+  useEffect(() => {
+    if (settings && Object.keys(settings).length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        ...settings,
+        whatsappAppMode: settings.whatsappAppMode || prev.whatsappAppMode || 'desktop'
+      }));
+    }
+  }, [settings]);
 
   const handleSelectFolder = async () => {
     try {
@@ -303,6 +314,76 @@ export function SettingsView({ settings, onSaveSettings, onCheckUpdates }) {
               />
               <p className="text-[11px] text-slate-400 mt-1">Variáveis disponíveis: {'{cliente}'}, {'{osNumber}'}, {'{status}'}, {'{total}'}</p>
             </div>
+
+            <div className="pt-2 border-t border-slate-100">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Como Abrir o WhatsApp ao Clicar nos Botões
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <label className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
+                  formData.whatsappAppMode === 'desktop' 
+                    ? 'border-emerald-500 bg-emerald-50/40 ring-2 ring-emerald-500/20' 
+                    : 'border-slate-200 bg-slate-50 hover:bg-slate-100/80'
+                }`}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="font-bold text-xs text-slate-900">App Desktop (Windows)</span>
+                    <input 
+                      type="radio" 
+                      name="whatsappAppMode" 
+                      value="desktop" 
+                      checked={formData.whatsappAppMode === 'desktop'}
+                      onChange={(e) => setFormData({ ...formData, whatsappAppMode: e.target.value })}
+                      className="text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Direciona direto para o aplicativo oficial do WhatsApp instalado no seu computador.
+                  </p>
+                </label>
+
+                <label className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
+                  formData.whatsappAppMode === 'web' 
+                    ? 'border-emerald-500 bg-emerald-50/40 ring-2 ring-emerald-500/20' 
+                    : 'border-slate-200 bg-slate-50 hover:bg-slate-100/80'
+                }`}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="font-bold text-xs text-slate-900">WhatsApp Web</span>
+                    <input 
+                      type="radio" 
+                      name="whatsappAppMode" 
+                      value="web" 
+                      checked={formData.whatsappAppMode === 'web'}
+                      onChange={(e) => setFormData({ ...formData, whatsappAppMode: e.target.value })}
+                      className="text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Abre a conversa na aba do seu navegador de internet padrão (Chrome, Edge, etc.).
+                  </p>
+                </label>
+
+                <label className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
+                  formData.whatsappAppMode === 'wa_me' 
+                    ? 'border-emerald-500 bg-emerald-50/40 ring-2 ring-emerald-500/20' 
+                    : 'border-slate-200 bg-slate-50 hover:bg-slate-100/80'
+                }`}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="font-bold text-xs text-slate-900">Página Universal</span>
+                    <input 
+                      type="radio" 
+                      name="whatsappAppMode" 
+                      value="wa_me" 
+                      checked={formData.whatsappAppMode === 'wa_me'}
+                      onChange={(e) => setFormData({ ...formData, whatsappAppMode: e.target.value })}
+                      className="text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Abre a página oficial wa.me para você escolher entre abrir no app ou no navegador.
+                  </p>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -507,7 +588,7 @@ export function SettingsView({ settings, onSaveSettings, onCheckUpdates }) {
             </div>
           </div>
           <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-            Versão Atual: <strong>v1.0.0</strong>
+            Versão Atual: <strong>v1.0.1</strong>
           </span>
         </div>
 

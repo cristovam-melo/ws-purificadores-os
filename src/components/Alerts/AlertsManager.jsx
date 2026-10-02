@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BellRing, 
   Search, 
@@ -6,14 +6,37 @@ import {
   Calendar, 
   CheckCircle2,
   FileText,
-  Phone
+  Phone,
+  Sparkles
 } from 'lucide-react';
 import { formatSimpleDate } from '../../utils/formatters';
 import { sendWhatsAppMessage, generateAlertWhatsAppText } from '../../services/messaging';
+import { BulkAlertModal } from './BulkAlertModal';
+import { db, seedMockOverdueData } from '../../db/database';
 
 export function AlertsManager({ alerts = [], settings, onViewOS }) {
   const [filter, setFilter] = useState('ALL'); // ALL, OVERDUE, UPCOMING
   const [search, setSearch] = useState('');
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+
+  // Se não houver alertas cadastrados, popula automaticamente os 3 clientes fictícios com refil vencido
+  useEffect(() => {
+    if (alerts.length === 0) {
+      seedMockOverdueData();
+    }
+  }, [alerts.length]);
+
+  const handleAlertSent = async (alert) => {
+    if (alert?.id) {
+      try {
+        await db.serviceOrders.update(alert.id, {
+          lastAlertSentAt: new Date().toISOString()
+        });
+      } catch (err) {
+        console.warn('Erro ao atualizar data de envio do alerta:', err);
+      }
+    }
+  };
 
   const filteredAlerts = alerts.filter(alert => {
     const matchesSearch = 
@@ -46,15 +69,26 @@ export function AlertsManager({ alerts = [], settings, onViewOS }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="text-center px-4 py-2 bg-white rounded-xl border border-amber-200 shadow-2xs">
-            <span className="text-xs text-slate-500 block font-medium">Vencidos</span>
-            <span className="text-lg font-bold text-rose-600">{overdueCount}</span>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="text-center px-4 py-2 bg-white rounded-xl border border-amber-200 shadow-2xs">
+              <span className="text-xs text-slate-500 block font-medium">Vencidos</span>
+              <span className="text-lg font-bold text-rose-600">{overdueCount}</span>
+            </div>
+            <div className="text-center px-4 py-2 bg-white rounded-xl border border-amber-200 shadow-2xs">
+              <span className="text-xs text-slate-500 block font-medium">Próximos 30 dias</span>
+              <span className="text-lg font-bold text-amber-600">{upcomingCount}</span>
+            </div>
           </div>
-          <div className="text-center px-4 py-2 bg-white rounded-xl border border-amber-200 shadow-2xs">
-            <span className="text-xs text-slate-500 block font-medium">Próximos 30 dias</span>
-            <span className="text-lg font-bold text-amber-600">{upcomingCount}</span>
-          </div>
+
+          <button
+            onClick={() => setIsBulkModalOpen(true)}
+            disabled={alerts.length === 0}
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 transition-all cursor-pointer transform active:scale-95 shrink-0"
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span>Disparo em Lote WhatsApp ({alerts.length})</span>
+          </button>
         </div>
       </div>
 
@@ -105,6 +139,17 @@ export function AlertsManager({ alerts = [], settings, onViewOS }) {
           <CheckCircle2 className="w-12 h-12 mx-auto text-emerald-400 mb-3" />
           <p className="font-semibold text-slate-700">Tudo em dia!</p>
           <p className="text-xs text-slate-400 mt-1">Nenhum alerta pendente para a seleção atual.</p>
+          <div className="pt-4">
+            <button
+              onClick={async () => {
+                await seedMockOverdueData(true);
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl transition-colors cursor-pointer shadow-2xs"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <span>Gerar 3 Clientes com Refil Vencido (Testar)</span>
+            </button>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -146,6 +191,13 @@ export function AlertsManager({ alerts = [], settings, onViewOS }) {
                       <span>{alert.clientPhone}</span>
                     </div>
                   )}
+
+                  {alert.lastAlertSentAt && (
+                    <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200/80">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                      <span>Notificado em {formatSimpleDate(alert.lastAlertSentAt)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -160,9 +212,10 @@ export function AlertsManager({ alerts = [], settings, onViewOS }) {
                 </button>
 
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     const msg = generateAlertWhatsAppText(alert, settings);
-                    sendWhatsAppMessage(alert.clientPhone, msg);
+                    await sendWhatsAppMessage(alert.clientPhone, msg, { mode: settings?.whatsappAppMode });
+                    handleAlertSent(alert);
                   }}
                   className="flex items-center gap-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3.5 py-2 rounded-xl shadow-xs transition-colors cursor-pointer"
                 >
@@ -174,6 +227,15 @@ export function AlertsManager({ alerts = [], settings, onViewOS }) {
           ))}
         </div>
       )}
+
+      {/* Modal de Disparo em Lote */}
+      <BulkAlertModal
+        isOpen={isBulkModalOpen}
+        onClose={() => setIsBulkModalOpen(false)}
+        alerts={alerts}
+        settings={settings}
+        onAlertSent={handleAlertSent}
+      />
 
     </div>
   );

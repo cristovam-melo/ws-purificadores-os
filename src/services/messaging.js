@@ -1,6 +1,30 @@
 import { cleanPhone, formatCurrency } from '../utils/formatters';
 
-export function sendWhatsAppMessage(phone, message) {
+/**
+ * Abre um link externo utilizando o plugin nativo do Tauri no desktop,
+ * com fallback transparente para o navegador caso esteja em modo web.
+ */
+export async function openExternalUrl(url) {
+  try {
+    const { openUrl } = await import('@tauri-apps/plugin-opener');
+    await openUrl(url);
+    return true;
+  } catch (err) {
+    console.warn('Abertura nativa via Tauri indisponível, usando fallback web:', err);
+    if (typeof window !== 'undefined') {
+      window.open(url, '_blank');
+    }
+    return true;
+  }
+}
+
+/**
+ * Dispara mensagem para o WhatsApp.
+ * @param {string} phone - Telefone do cliente
+ * @param {string} message - Texto da mensagem
+ * @param {object} options - Opções de envio ({ mode: 'desktop' | 'web' | 'wa_me' })
+ */
+export async function sendWhatsAppMessage(phone, message, options = {}) {
   let cleaned = cleanPhone(phone);
   if (!cleaned) return false;
   
@@ -10,22 +34,45 @@ export function sendWhatsAppMessage(phone, message) {
   }
   
   const encodedText = encodeURIComponent(message);
-  const url = `https://wa.me/${cleaned}?text=${encodedText}`;
-  window.open(url, '_blank');
-  return true;
+  const mode = options.mode || 'desktop'; // 'desktop' (abre direto app instalado), 'web' (navegador), 'wa_me' (universal)
+  
+  let primaryUrl;
+  let fallbackUrl;
+
+  if (mode === 'desktop') {
+    primaryUrl = `whatsapp://send?phone=${cleaned}&text=${encodedText}`;
+    fallbackUrl = `https://wa.me/${cleaned}?text=${encodedText}`;
+  } else if (mode === 'web') {
+    primaryUrl = `https://web.whatsapp.com/send?phone=${cleaned}&text=${encodedText}`;
+    fallbackUrl = primaryUrl;
+  } else {
+    primaryUrl = `https://wa.me/${cleaned}?text=${encodedText}`;
+    fallbackUrl = primaryUrl;
+  }
+
+  try {
+    const { openUrl } = await import('@tauri-apps/plugin-opener');
+    await openUrl(primaryUrl);
+    return true;
+  } catch (err) {
+    console.warn('Abertura nativa de WhatsApp falhou, usando fallback no navegador:', err);
+    if (typeof window !== 'undefined') {
+      window.open(fallbackUrl, '_blank');
+    }
+    return true;
+  }
 }
 
-export function sendTelegramMessage(text) {
+export async function sendTelegramMessage(text) {
   const encoded = encodeURIComponent(text);
   const url = `https://t.me/share/url?url=&text=${encoded}`;
-  window.open(url, '_blank');
+  return openExternalUrl(url);
 }
 
-export function sendEmail(email, subject, body) {
+export async function sendEmail(email, subject, body) {
   if (!email) return false;
   const url = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = url;
-  return true;
+  return openExternalUrl(url);
 }
 
 export function generateOSWhatsAppText(os, settings) {

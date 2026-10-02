@@ -28,7 +28,7 @@ export function OrderViewModal({ isOpen, onClose, os, settings }) {
 
   const handleWhatsApp = () => {
     const msg = generateOSWhatsAppText(os, settings);
-    sendWhatsAppMessage(os.clientPhone, msg);
+    sendWhatsAppMessage(os.clientPhone, msg, { mode: settings?.whatsappAppMode });
   };
 
   return (

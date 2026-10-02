@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "WS Purificadores OS",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "identifier": "com.wspurificadores.osws",
   "build": {
     "frontendDist": "../dist",

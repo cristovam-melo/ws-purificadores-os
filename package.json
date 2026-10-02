@@ -1,7 +1,7 @@
 {
   "name": "os-ws",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Sistema de Gestão de Ordens de Serviço e Alertas - WS Purificadores",
   "main": "electron/main.cjs",
   "author": "WS Purificadores",
@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "@tauri-apps/plugin-opener": "^2.7.0",
     "@tauri-apps/plugin-updater": "^2.11.0",
     "autoprefixer": "^10.5.4",
     "clsx": "^2.1.1",
