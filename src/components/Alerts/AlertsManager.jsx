@@ -12,19 +12,12 @@ import {
 import { formatSimpleDate } from '../../utils/formatters';
 import { sendWhatsAppMessage, generateAlertWhatsAppText } from '../../services/messaging';
 import { BulkAlertModal } from './BulkAlertModal';
-import { db, seedMockOverdueData } from '../../db/database';
+import { db } from '../../db/database';
 
 export function AlertsManager({ alerts = [], settings, onViewOS }) {
   const [filter, setFilter] = useState('ALL'); // ALL, OVERDUE, UPCOMING
   const [search, setSearch] = useState('');
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
-
-  // Se não houver alertas cadastrados, popula automaticamente os 3 clientes fictícios com refil vencido
-  useEffect(() => {
-    if (alerts.length === 0) {
-      seedMockOverdueData();
-    }
-  }, [alerts.length]);
 
   const handleAlertSent = async (alert) => {
     if (alert?.id) {
@@ -139,17 +132,6 @@ export function AlertsManager({ alerts = [], settings, onViewOS }) {
           <CheckCircle2 className="w-12 h-12 mx-auto text-emerald-400 mb-3" />
           <p className="font-semibold text-slate-700">Tudo em dia!</p>
           <p className="text-xs text-slate-400 mt-1">Nenhum alerta pendente para a seleção atual.</p>
-          <div className="pt-4">
-            <button
-              onClick={async () => {
-                await seedMockOverdueData(true);
-              }}
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl transition-colors cursor-pointer shadow-2xs"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              <span>Gerar 3 Clientes com Refil Vencido (Testar)</span>
-            </button>
-          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
